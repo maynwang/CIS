@@ -446,17 +446,19 @@ def gmap(lon,lat,array,dtrend_95=None, grouping=None, cmap=None, vmin=None, vmax
  
     return im, fig
 
-def plot_cartopy(ax, lon, lat):
+def plot_cartopy(ax, lon, lat, land):
     '''
     Set up the cartopy map with projection rotated so that Labrador coast is vertical. Input is the ax handle. 
     '''
     #Declare the land and ocean parameters
     LAND_highres = cartopy.feature.NaturalEarthFeature('physical', 'land', '10m',
-    edgecolor='black',
-    facecolor=('silver'),
+    edgecolor='dimgrey',
+    facecolor=('dimgrey'),
     linewidth=1)
     OCEAN_highres = cartopy.feature.NaturalEarthFeature('physical', 'ocean', '10m',
-    facecolor='dimgrey')
+    facecolor='lightblue')
+    # Set opacity to 0.5
+    ax.background_patch.set_alpha(0.5)
 
     #Declare the lat and lon boundaries for the map and data
     domain = [99, 99, -99, -99]
@@ -464,21 +466,24 @@ def plot_cartopy(ax, lon, lat):
     domain[1] = np.min(lon) # West
     domain[2] = np.max(lat) # North
     domain[3] = np.max(lon) # East
-    #     domain = list(np.array(domain) + np.array([+1, +6, 0, -4]))
-    domain = [53.58105923668295, -61.30979545701268, 61.589404038199575, -56.47452933956656]
+#     domain = list(np.array(domain) + np.array([+1, +6, 0, -4]))
+    domain = [54.5, -61.30979545701268, 62, -56.47452933956656]
     # domain = [55, -61.30979545701268, 59, -61]
 
     aoi_map = [domain[0], domain[2], domain[1], domain[3]]
-    # Rotation for vertical coast
-    rot = ccrs.RotatedPole(pole_latitude=55,pole_longitude=150)
-
 #     # Plot results
 #     transform = rot.transform_points(rot,lon,lat)
 #     x_n = transform[...,0]
 #     y_n = transform[...,1]
 
-    ax.add_feature(LAND_highres,zorder=2)
-    ax.add_feature(OCEAN_highres,zorder=3)
+#     ax.add_feature(LAND_highres,zorder=1)
+    ax.add_feature(OCEAN_highres,zorder=1)
     ax.set_extent([aoi_map[2], aoi_map[3], aoi_map[0], aoi_map[1]])
-    ax.coastlines(resolution='10m',linewidth=0.35,zorder=3)
+    ax.fill_between([0,100000],[0,100000], color="none", hatch="..", edgecolor="k", linewidth=0.0,transform=ccrs.PlateCarree(),zorder=4)
+    
+    # Fill land and coastline
+    plt.pcolormesh(lon,lat,land,transform=ccrs.PlateCarree(),zorder=4,cmap = matplotlib.colors.ListedColormap(['lightblue', 'lightgrey']))
+    plt.contour(lon,lat,land,colors='black',transform=ccrs.PlateCarree(),zorder=4)
+
+#     ax.coastlines(resolution='10m',linewidth=0.35,zorder=3)
     
